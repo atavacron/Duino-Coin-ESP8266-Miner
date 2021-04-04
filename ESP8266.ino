@@ -37,7 +37,7 @@ namespace /* anonymous */ {
   const char* ssid          = NETWORK_SSID;    // Change this to your WiFi SSID
   const char* password      = NETWORK_PWD;     // Change this to your WiFi password
   const char* ducouser      = DOCU_USERNAME;   // Change this to your Duino-Coin username
-  const char* rigIdentifier = "ESP.01";        // Change this if you want a custom miner name
+  const char* rigIdentifier = "ESP.XX";        // Change this if you want a custom miner name
 
   const char * host = "51.15.127.80"; // Static server IP
   const int port = 2811;
@@ -173,7 +173,9 @@ void loop() {
       float ElapsedTimeSeconds = ElapsedTime * .000001f; // Convert to seconds
       float HashRate = iJob / ElapsedTimeSeconds;
 
-      client.print(String(iJob) + "," + String(HashRate) + ",ESP-8266 Miner "+VersionInfo()+"," + String(rigIdentifier)); // Send result to server
+      // client.print(String(iJob));
+      client.print(String(iJob) + ",,ESP-8266 Miner "+VersionInfo()+"," + String(rigIdentifier)); // Send result to server
+      // client.print(String(iJob) + "," + String(HashRate) + ",ESP-8266 Miner "+VersionInfo()+"," + String(rigIdentifier)); // Send result to server
 
       String feedback = client.readStringUntil('\n'); // Receive feedback
       Shares++;
