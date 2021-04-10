@@ -142,6 +142,8 @@ void setup() {
   Serial.begin(74880); // Start serial connection
   Serial.println("\nESP-8266 Miner "+VersionInfo());
 
+  delay(rand() % 1000); // delay up to 1sec to stagger start-ups
+
   SetupWifi();
   SetupOTA();
 
