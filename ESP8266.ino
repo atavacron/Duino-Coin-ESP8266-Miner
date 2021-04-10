@@ -37,7 +37,7 @@ namespace /* anonymous */ {
   const char* ssid          = NETWORK_SSID;    // Change this to your WiFi SSID
   const char* password      = NETWORK_PWD;     // Change this to your WiFi password
   const char* ducouser      = DOCU_USERNAME;   // Change this to your Duino-Coin username
-  const char* rigIdentifier = "ESP.XX";        // Change this if you want a custom miner name
+  const char* rigIdentifier = "ESP.05";        // Change this if you want a custom miner name
 
   const char * host = "51.15.127.80"; // Static server IP
   const int port = 2811;
@@ -186,7 +186,13 @@ void loop() {
       break; // Stop and ask for more work
     }
 
-    if (max_micros_elapsed(micros(), 400000)) 
+    if (max_micros_elapsed(micros(), 400000)) {
+      ArduinoOTA.handle();
       yield();
+    }
   }
+
+  if (Shares > 500)
+    RestartESP("Share limit achieved.");
+
 }
