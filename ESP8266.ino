@@ -139,7 +139,7 @@ namespace /* anonymous */ {
 } // namespace
 
 void setup() {
-  Serial.begin(115200); // Start serial connection
+  Serial.begin(74880); // Start serial connection
   Serial.println("\nESP-8266 Miner "+VersionInfo());
 
   SetupWifi();
