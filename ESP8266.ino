@@ -37,7 +37,7 @@ namespace /* anonymous */ {
   const char* ssid          = NETWORK_SSID;    // Change this to your WiFi SSID
   const char* password      = NETWORK_PWD;     // Change this to your WiFi password
   const char* ducouser      = DOCU_USERNAME;   // Change this to your Duino-Coin username
-  const char* rigIdentifier = "ESP.05";        // Change this if you want a custom miner name
+  const char* rigIdentifier = "ESP.XX";        // Change this if you want a custom miner name
 
   const char * host = "51.15.127.80"; // Static server IP
   const int port = 2811;
@@ -89,22 +89,20 @@ namespace /* anonymous */ {
       else if (error == OTA_RECEIVE_ERROR) Serial.println("Receive Failed");
       else if (error == OTA_END_ERROR) Serial.println("End Failed");
     });
+
+    ArduinoOTA.setHostname(rigIdentifier);
     ArduinoOTA.begin();
   }
 
   void blink(uint8_t count, uint8_t pin = LED_BUILTIN) {
     uint8_t state = HIGH;
 
-    pinMode(pin, FUNCTION_3); // Set to GPIO / OUTPUT mode 
     for (int x=0; x<(count << 1); ++x) {
       digitalWrite(pin, state ^= HIGH);
       delay(50);
     }
 
     digitalWrite(pin, state); // NOTE: Is this really needed...?
-    pinMode(pin, FUNCTION_0); // Reset back to TX/RX Serial mode
-    yield();  // register updates can take several cpu cycles; 
-              // lets give them a chance to change
   }
 
   void RestartESP(String msg) {
@@ -143,6 +141,7 @@ void setup() {
   Serial.println("\nESP-8266 Miner "+VersionInfo());
 
   delay(rand() % 1000); // delay up to 1sec to stagger start-ups
+  pinMode(LED_BUILTIN, OUTPUT); // prepare for blink() function
 
   SetupWifi();
   SetupOTA();
@@ -176,8 +175,8 @@ void loop() {
       float HashRate = iJob / ElapsedTimeSeconds;
 
       // client.print(String(iJob));
-      client.print(String(iJob) + ",,ESP-8266 Miner "+VersionInfo()+"," + String(rigIdentifier)); // Send result to server
-      // client.print(String(iJob) + "," + String(HashRate) + ",ESP-8266 Miner "+VersionInfo()+"," + String(rigIdentifier)); // Send result to server
+      // client.print(String(iJob) + ",,ESP-8266 Miner "+VersionInfo()+"," + String(rigIdentifier)); // Send result to server
+      client.print(String(iJob) + "," + String(HashRate) + ",ESP-8266 Miner "+VersionInfo()+"," + String(rigIdentifier)); // Send result to server
 
       String feedback = client.readStringUntil('\n'); // Receive feedback
       Shares++;

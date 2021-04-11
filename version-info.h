@@ -4,7 +4,7 @@
 #define MAJOR_VERSION  2021 
 #define MINOR_VERSION  4 
 #define GIT_REVISION    
-#define BUILD_NUMBER   6 
+#define BUILD_NUMBER   7 
  
 #define VersionInfo()  String(MAJOR_VERSION) + "." + \ 
                        String(MINOR_VERSION) + "." + \ 
