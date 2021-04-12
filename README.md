@@ -12,7 +12,7 @@ Here's my entire project directory for the miners that I use with my ESP-01 devi
 
     #endif // _WIFI_MANAGER_HPP__
 
-##Notes on Compiling:
+## Notes on Compiling:
 
 I use Visual-Studio Code with Arduino extension for development. This repo includes my .vscode settings which will need to be changed to match your specific development environment.
 
@@ -20,7 +20,7 @@ Once the code is working the way I like, I then compile a "Final" version using 
 
 In either case, I compile using the 160mhz compiler setting.
 
-##Personal Hashrates:
+## Personal Hashrates:
 
 Using my ESP-01 devices, I get the following hash-rates:
 
