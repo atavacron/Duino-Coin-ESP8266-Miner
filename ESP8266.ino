@@ -23,15 +23,15 @@
 #include <WiFiUdp.h>
 #include <ArduinoOTA.h>
 
+#include <Crypto.h>  // experimental SHA1 crypto library
+using namespace experimental::crypto;
+
 #include "version-info.h"   // Created by calling increase-version.bat; requires
                             // increase-version.dat file which stores the current
                             // build number - Needed for VersionInfo() macro.
-#include "wifi-manager.hpp" // contains #defines NETWORK_SSID / NETWORK_PWD so
-                            // my personal information isn't pushed to git repo
-                            // since this file is .gitignore'd
-
-#include <Crypto.h>  // experimental SHA1 crypto library
-using namespace experimental::crypto;
+#include "wifi-manager.hpp" // contains #defines NETWORK_SSID / NETWORK_PWD and
+                            // DUCO_USERNAME so my personal information isn't 
+                            // pushed to git repo since this file is .gitignore'd
 
 namespace /* anonymous */ {
   const char* ssid          = NETWORK_SSID;    // Change this to your WiFi SSID
