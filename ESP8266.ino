@@ -37,7 +37,7 @@ namespace /* anonymous */ {
   const char* ssid          = NETWORK_SSID;    // Change this to your WiFi SSID
   const char* password      = NETWORK_PWD;     // Change this to your WiFi password
   const char* ducouser      = DOCU_USERNAME;   // Change this to your Duino-Coin username
-  const char* rigIdentifier = "ESP.XX";        // Change this if you want a custom miner name
+  const char* rigIdentifier = "ESP.08";        // Change this if you want a custom miner name
 
   const char * host = "51.15.127.80"; // Static server IP
   const int port = 2811;
@@ -95,14 +95,12 @@ namespace /* anonymous */ {
   }
 
   void blink(uint8_t count, uint8_t pin = LED_BUILTIN) {
-    uint8_t state = HIGH;
+    uint8_t state = LOW;
 
     for (int x=0; x<(count << 1); ++x) {
       digitalWrite(pin, state ^= HIGH);
       delay(50);
     }
-
-    digitalWrite(pin, state); // NOTE: Is this really needed...?
   }
 
   void RestartESP(String msg) {
@@ -155,7 +153,7 @@ void loop() {
 
   Serial.println("Asking for a new job for user: " + String(ducouser));
 
-  client.print("JOB," + String(ducouser) + ",ESP32"); // Ask for new job
+  client.print("JOB," + String(ducouser) + ",ESP8266"); // Ask for new job
   String hash = client.readStringUntil(','); // Read data to the first peroid - last block hash
   String job = client.readStringUntil(','); // Read data to the next peroid - expected hash
   unsigned int diff = client.readStringUntil('\n').toInt() * 100 + 1; // Read and calculate remaining data - difficulty
