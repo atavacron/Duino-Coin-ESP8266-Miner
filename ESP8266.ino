@@ -196,7 +196,7 @@ void loop() {
 
   Serial.println("Asking for a new job for user: " + String(ducouser));
 
-  client.print("JOB," + String(ducouser) + ",ESP32"); // Ask for new job
+  client.print("JOB," + String(ducouser) + ",ESP8266"); // Ask for new job
   waitForClientData();
 
   String hash = getValue(clientBuffer, SEP_TOKEN, 0); // Read data to the first peroid - last block hash
