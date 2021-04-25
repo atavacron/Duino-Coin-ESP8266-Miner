@@ -37,15 +37,19 @@ namespace /* anonymous */ {
   const char* ssid          = NETWORK_SSID;    // Change this to your WiFi SSID
   const char* password      = NETWORK_PWD;     // Change this to your WiFi password
   const char* ducouser      = DOCU_USERNAME;   // Change this to your Duino-Coin username
-  const char* rigIdentifier = "ESP.08";        // Change this if you want a custom miner name
+  const char* rigIdentifier = "ESP.XX";        // Change this if you want a custom miner name
 
   const char * host = "51.15.127.80"; // Static server IP
   const int port = 2811;
   unsigned int Shares = 0; // Share variable
 
   WiFiClient client;
+  String clientBuffer = "";
 
-  #define LED_BUILTIN 2
+  #define END_TOKEN  '\n'
+  #define SEP_TOKEN  ','
+
+  #define LED_BUILTIN 1
 
   #define BLINK_SHARE_FOUND    1
   #define BLINK_SETUP_COMPLETE 2
@@ -95,7 +99,7 @@ namespace /* anonymous */ {
   }
 
   void blink(uint8_t count, uint8_t pin = LED_BUILTIN) {
-    uint8_t state = LOW;
+    uint8_t state = HIGH;
 
     for (int x=0; x<(count << 1); ++x) {
       digitalWrite(pin, state ^= HIGH);
@@ -110,6 +114,44 @@ namespace /* anonymous */ {
     ESP.reset();
   }
 
+  void handleSystemEvents(void) {
+    ArduinoOTA.handle();
+    yield();
+  }
+
+  // https://stackoverflow.com/questions/9072320/split-string-into-string-array
+  String getValue(String data, char separator, int index)
+  {
+    int found = 0;
+    int strIndex[] = {0, -1};
+    int maxIndex = data.length()-1;
+
+    for(int i=0; i<=maxIndex && found<=index; i++){
+      if(data.charAt(i)==separator || i==maxIndex){
+        found++;
+        strIndex[0] = strIndex[1]+1;
+        strIndex[1] = (i == maxIndex) ? i+1 : i;
+      }
+    }
+
+    return found>index ? data.substring(strIndex[0], strIndex[1]) : "";
+  }
+  
+  void waitForClientData(void) {
+    clientBuffer = "";
+    
+    while (client.connected()) {
+      if (client.available()) {
+        clientBuffer = client.readStringUntil(END_TOKEN);
+        if (clientBuffer.length() == 1 && clientBuffer[0] == END_TOKEN)
+          clientBuffer = "???\n"; // NOTE: Should never happen...
+
+        break;
+      }
+      handleSystemEvents();
+    }
+  }
+
   void ConnectToServer() {
     if (client.connected())
       return;
@@ -118,7 +160,8 @@ namespace /* anonymous */ {
     if (!client.connect(host, port)) 
       RestartESP("Connection failed.");
   
-    Serial.println("Connected to the server. Server version: " + client.readString());
+    waitForClientData();
+    Serial.println("Connected to the server. Server version: " + clientBuffer );
     blink(BLINK_CLIENT_CONNECT); // Blink 3 times - indicate sucessfull connection with the server
   }
 
@@ -153,10 +196,12 @@ void loop() {
 
   Serial.println("Asking for a new job for user: " + String(ducouser));
 
-  client.print("JOB," + String(ducouser) + ",ESP8266"); // Ask for new job
-  String hash = client.readStringUntil(','); // Read data to the first peroid - last block hash
-  String job = client.readStringUntil(','); // Read data to the next peroid - expected hash
-  unsigned int diff = client.readStringUntil('\n').toInt() * 100 + 1; // Read and calculate remaining data - difficulty
+  client.print("JOB," + String(ducouser) + ",ESP32"); // Ask for new job
+  waitForClientData();
+
+  String hash = getValue(clientBuffer, SEP_TOKEN, 0); // Read data to the first peroid - last block hash
+  String job = getValue(clientBuffer, SEP_TOKEN, 1); // Read data to the next peroid - expected hash
+  unsigned int diff = getValue(clientBuffer, SEP_TOKEN, 2).toInt() * 100 + 1; // Read and calculate remaining data - difficulty
   Serial.println("Job received: " + hash + " " + job + " " + String(diff));
 
   job.toUpperCase();
@@ -172,24 +217,17 @@ void loop() {
       float ElapsedTimeSeconds = ElapsedTime * .000001f; // Convert to seconds
       float HashRate = iJob / ElapsedTimeSeconds;
 
-      // client.print(String(iJob));
-      // client.print(String(iJob) + ",,ESP-8266 Miner "+VersionInfo()+"," + String(rigIdentifier)); // Send result to server
       client.print(String(iJob) + "," + String(HashRate) + ",ESP-8266 Miner "+VersionInfo()+"," + String(rigIdentifier)); // Send result to server
+      waitForClientData();
 
-      String feedback = client.readStringUntil('\n'); // Receive feedback
       Shares++;
-      Serial.println(feedback + " share #" + String(Shares) + " (" + String(iJob) + ")" + " Hashrate: " + String(HashRate) + " Free RAM: " + String(ESP.getFreeHeap()));
+      Serial.println(clientBuffer + " share #" + String(Shares) + " (" + String(iJob) + ")" + " Hashrate: " + String(HashRate) + " Free RAM: " + String(ESP.getFreeHeap()));
       blink(BLINK_SHARE_FOUND);
       break; // Stop and ask for more work
     }
 
-    if (max_micros_elapsed(micros(), 400000)) {
-      ArduinoOTA.handle();
-      yield();
-    }
+    if (max_micros_elapsed(micros(), 400000)) 
+      handleSystemEvents();
+      
   }
-
-  if (Shares > 500)
-    RestartESP("Share limit achieved.");
-
 }
