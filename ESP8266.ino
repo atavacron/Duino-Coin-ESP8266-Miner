@@ -37,7 +37,7 @@ namespace /* anonymous */ {
   const char* ssid          = NETWORK_SSID;    // Change this to your WiFi SSID
   const char* password      = NETWORK_PWD;     // Change this to your WiFi password
   const char* ducouser      = DOCU_USERNAME;   // Change this to your Duino-Coin username
-  const char* rigIdentifier = "ESP.XX";        // Change this if you want a custom miner name
+  const char* rigIdentifier = "ESP.NO";        // Change this if you want a custom miner name
 
   const char * host = "51.15.127.80"; // Static server IP
   const int port = 2811;
@@ -97,7 +97,7 @@ namespace /* anonymous */ {
     ArduinoOTA.setHostname(rigIdentifier);
     ArduinoOTA.begin();
   }
-
+  
   void blink(uint8_t count, uint8_t pin = LED_BUILTIN) {
     uint8_t state = HIGH;
 
@@ -114,8 +114,22 @@ namespace /* anonymous */ {
     ESP.reset();
   }
 
+  void VerifyWifi() {
+    unsigned long lastMillis = millis();
+    
+    while (WiFi.status() != WL_CONNECTED || WiFi.localIP() == IPAddress(0,0,0,0)) {
+      WiFi.reconnect();
+
+      if ((millis() - lastMillis) > 60000) {
+        // after 1-minute of failed re-connects... 
+        RestartESP("Unable to reconnect to wifi...");
+      }
+    }
+  }
+
   void handleSystemEvents(void) {
-    ArduinoOTA.handle();
+    VerifyWifi();
+    ArduinoOTA.handle(); // Enable OTA handler
     yield();
   }
 
@@ -191,8 +205,9 @@ void setup() {
 }
 
 void loop() {
-  ArduinoOTA.handle(); // Enable OTA handler
-  ConnectToServer();
+  VerifyWifi();
+  ArduinoOTA.handle();
+  ConnectToServer(); 
 
   Serial.println("Asking for a new job for user: " + String(ducouser));
 
